@@ -11,96 +11,57 @@ import { delay, getRandomColor } from "./utils";
 import { Cordinate } from "./types";
 
 export default function App() {
-  const CORD_STEP = 1.05;
-  const HEIGHT = 2;
-  const DELAY_DUR = 200;
-  const DEPTH_INIT = 5;
+  const HEIGHT_INIT = 0.4;
+  const DEPTH_INIT = 7;
+  const DELAY_DUR = 100;
 
   const [loading, setLoading] = useState(false);
 
   const [depth, setDepth] = useState(DEPTH_INIT);
-
-  const [cords, setCords] = useState<Cordinate>({
-    x: CORD_STEP,
-    z: CORD_STEP,
-    y: HEIGHT,
-  });
+  const [depthCopy, setDepthCopy] = useState(DEPTH_INIT);
 
   const [boxes, setBoxes] = useRecoilState(boxesState);
 
-  const calculateCords = (c: Cordinate, _depth: number): Cordinate => {
-    const offset = DEPTH_INIT - Math.sqrt(_depth);
-    const limit = Math.sqrt(_depth);
-    const copy = { ...c };
-    if (copy.z > limit) {
-      copy.z = CORD_STEP;
-      copy.x += CORD_STEP;
-    } else copy.z += CORD_STEP;
-
-    return copy;
-  };
+  const [step, setStep] = useState(0);
 
   const boom = async () => {
-    // let i = 0;
-    // setLoading(true);
-    // const boomInterval = setInterval(() => {
-    //   if (i === 99) {
-    //     setLoading(false);
-    //     clearInterval(boomInterval);
-    //   }
-    //   createNewBox();
-    //   i++;
-    // }, DELAY);
     setLoading(true);
-    for (let i = 0; i < Math.pow(depth, 2); i++) {
+    for (let i = step; i < depthCopy - step; i++) {
+      for (let j = step; j < depthCopy - step; j++) {
+        createNewBox(i, j);
+      }
       await delay(DELAY_DUR);
-      createNewBox();
     }
-    clearCords();
-    setLoading(false);
-
     setDepth((prev) => prev - 2);
-  };
-
-  const clearCords = () => {
-    setCords({
-      x: CORD_STEP,
-      z: CORD_STEP,
-      y: HEIGHT,
-    });
+    setStep((prev) => prev + 1);
+    setLoading(false);
   };
 
   const clearBoxes = () => {
     setBoxes([]);
-    clearCords();
     setDepth(DEPTH_INIT);
+    setDepthCopy(DEPTH_INIT);
+    setStep(0);
   };
 
-  const createNewBox = () => {
+  const createNewBox = (x: number, z: number) => {
     setBoxes((prev) => [
       ...prev,
       {
         id: getRandomUUID(),
         color: getRandomColor(),
+        cords: {
+          x,
+          z,
+          y: HEIGHT_INIT + step,
+        },
       },
     ]);
-    setCords((prev) => calculateCords(prev, Math.pow(depth, 2)));
-  };
-
-  const onlyEvens = () => {
-    setBoxes((prev) => prev.filter((_, i) => i % 2 === 0));
   };
 
   return (
     <>
-      <div className="my-5 space-x-2">
-        <button
-          className="btn btn-primary"
-          disabled={loading}
-          onClick={createNewBox}
-        >
-          Add Box
-        </button>
+      <div className="my-5 space-x-2 pl-5">
         <button className="btn btn-primary" disabled={loading} onClick={boom}>
           BOOM
         </button>
@@ -111,15 +72,23 @@ export default function App() {
         >
           Clear
         </button>
-        <button
-          className="btn btn-primary"
-          disabled={loading}
-          onClick={onlyEvens}
-        >
-          Only Evens
-        </button>
+
+        <input
+          type="number"
+          min={0}
+          max={115}
+          step={2}
+          value={depth}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            setDepth(val);
+            setDepthCopy(val);
+            setStep(0);
+            setBoxes([]);
+          }}
+          className="input input-primary"
+        />
         <p>Number of boxes: {boxes.length}</p>
-        <pre>{JSON.stringify(cords, null, 4)}</pre>
       </div>
       <Canvas
         style={{
@@ -140,9 +109,7 @@ export default function App() {
               onClick={() => {
                 setBoxes((prev) => prev.filter((e) => e.id !== box.id));
               }}
-              x={cords.x}
-              y={cords.y}
-              z={cords.z}
+              cords={box.cords}
             />
           ))}
           <OrbitControls />

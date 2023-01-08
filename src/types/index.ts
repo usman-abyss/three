@@ -1,6 +1,7 @@
 export interface IBox {
   id: string;
   color: string;
+  cords: Cordinate;
 }
 
 export interface Cordinate {

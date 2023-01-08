@@ -1,18 +1,17 @@
 import { useBox } from "@react-three/cannon";
 import { ThreeEvent } from "@react-three/fiber";
+import { Cordinate } from "../types";
 
 interface Props {
-  x: number;
-  y: number;
-  z: number;
+  cords: Cordinate;
   onClick: ((event: ThreeEvent<MouseEvent>) => void) | undefined;
   color: string;
 }
 
-export default function Box(props: Props) {
+export default function Box({ onClick, color, cords: { x, y, z } }: Props) {
   const [ref] = useBox(() => ({
     mass: 4,
-    position: [props.x, props.y, props.z],
+    position: [x, y, z],
     // position: [Math.random() * 10, 20, 1],
     // position: [Math.random(), 10, Math.random()],
     // position: [1, 10, 1],
@@ -20,9 +19,9 @@ export default function Box(props: Props) {
   }));
 
   return (
-    <mesh ref={ref as any} onClick={props.onClick}>
+    <mesh ref={ref as any} onClick={onClick}>
       <boxGeometry />
-      <meshStandardMaterial color={props.color} />
+      <meshStandardMaterial color={color} />
     </mesh>
   );
 }
