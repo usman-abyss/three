@@ -1,5 +1,5 @@
 import { atom } from "recoil";
-import { IBox } from "../../types";
+import { Cordinate, IBox } from "../../types";
 import { getRandomColor, getRandomUUID } from "../../utils";
 
 export const countState = atom({
@@ -15,4 +15,13 @@ export const boxesState = atom<IBox[]>({
     //   color: getRandomColor(),
     // },
   ],
+});
+
+export const directionLightsCordsState = atom<Cordinate>({
+  key: "directionLightsCordsState",
+  default: {
+    x: 5,
+    z: 4,
+    y: 0.1,
+  },
 });
