@@ -1,14 +1,22 @@
 import { useBox } from "@react-three/cannon";
-import { ThreeEvent } from "@react-three/fiber";
-import { Cordinate } from "../types";
+import { useRecoilState } from "recoil";
+import { boxesState } from "../state";
+import { Color } from "three";
+import { IBox } from "../types";
 
 interface Props {
-  cords: Cordinate;
-  onClick: ((event: ThreeEvent<MouseEvent>) => void) | undefined;
-  color: string;
+  box: IBox;
 }
 
-export default function Box({ onClick, color, cords: { x, y, z } }: Props) {
+export default function Box({
+  box: {
+    id: boxId,
+    color,
+    cords: { x, y, z },
+  },
+}: Props) {
+  const [, setBoxes] = useRecoilState(boxesState);
+
   const [ref] = useBox(() => ({
     mass: 4,
     position: [x, y, z],
@@ -19,9 +27,14 @@ export default function Box({ onClick, color, cords: { x, y, z } }: Props) {
   }));
 
   return (
-    <mesh ref={ref as any} onClick={onClick}>
+    <mesh
+      ref={ref as any}
+      onClick={() => {
+        setBoxes((prev) => prev.filter((e) => e.id !== boxId));
+      }}
+    >
       <boxGeometry />
-      <meshStandardMaterial color={color} />
+      <meshStandardMaterial color={new Color(color)} />
     </mesh>
   );
 }
